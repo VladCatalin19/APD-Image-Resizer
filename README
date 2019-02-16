@@ -1,0 +1,52 @@
+-------------------------------------------------------------------------------
+Vlad Marius-Cătălin 325CD
+Anul III Semestrul I
+Tema1 Algoritmi Paraleli și Distribuiți
+-------------------------------------------------------------------------------
+
+	1) Super Sampling Anti Aliasing
+	Pentru rezolvarea acestei cerințe am declarat o structură auxiliară „pixel”
+care conține un vector de 3 elemente. Aceasta va fi folosită în reperzentarea
+unui pizel astfel: dacă imaginea este alb-negru, se va reține în câmpul [0] 
+griul respectivă, dacă imaginea este color, se va folosi toate câmpurile
+vectorului pentru a reține culorile roșu, verde și albastru.
+	Structura „image” reține dacă imaginea este alb-negru sau color, lățimea
+și înălțimea imaginii, valoarea maximă a canalului unei culori și matricea de
+pixeli.
+	Citirea și scrierea imaginilor se fac eficient cu ajutorul funcțiilor fread
+și fwrite folosind un buffer pentru a minimiza numărul de apeluri ale acestor
+funcții.
+	Funcția de resize se face conform enunțului cu medie aritmetică pentru
+resize_factor par și cu kernel Gaussian pentru resize_factor 3.
+	Se ia fiecare pixel din imaginea care trebuie creată și se calculează cu-
+loarea acestuia. Pentru fiecare pixel se ia o submatrice de dimensiune resize
+factor x resize factor și se face media pixelilor sau se aplică filtrul
+Gaussian. Această submatrice începe cu coordonatele x și y ale pixelului din
+imaginea care rezultă înmulțite cu resize factor.
+	Pentru a modulariza codul, am folosit pointer la funcții, am făcut 4 funcții
+separate pentru imagini alb-negru sau color și resize factor par sau egal cu 3.
+Înainte de paralelizare se decice ce funcție va fi necesară și se transmite
+funcțiilor care se vor executa în paralel.
+	Paralelizarea se face în calcularea matricei mai mici. Acest lucru se face
+după dimensiunea cea mai mare a imaginii pentru a evita situațiile cănd una din
+dimensiuni este prea mică pentru a fi avantajos să fie paralelizată. În funcți-
+ile de scriere și citire a matricelor nu se paralelizează.
+	Fiecare thread va lua o „fâșie” din matrice și va aplica filtrul respectiv.
+Aceste zone nu se intercalează și nu este nevoie de folosirea barierelor.
+	De asemenea, pentru a transmite mai multe argumente funcției unui fir de
+execuție, s-a folosit o structură care incapsulează argumentele.
+
+
+	2) Micro renderer
+	În această parte, structura „image” conține doar lățimea imnaginii și
+matricea de pixeli deoarece formatul și valoarea maximă a unei culori sunt
+constante.
+	După inițializarea matricei de pixeli, se scalează rezoluția imaginii de
+100cm x 100cm la rezoluția imaginii cerute. Se ia centrul fiecărui pixel din
+imaginea care trebuie creată, se calculează distața de la acesta la dreaptă și
+se verifică dacă este mai mică sau egală decât 3. Pixelul se colorează alb sau
+negru după această distanță.
+	Paralelizarea se face după înălțimea matricei de pixeli. Deoarece înalțimea
+este egală cu lățimea, nu mai este necesară calcularea maximului dintre cele 2.
+Matricea este împărțite în zone care nu se sprapun, deci nu este nevoie de
+barieră sau semafor.
